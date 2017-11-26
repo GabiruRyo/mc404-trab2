@@ -9,25 +9,26 @@
 
 #include "api_robot2.h"
 
-#define LIMIAR_PERTO 400		// Limiar para um sonar especifico.
+// Definição das constantes.
+#define LIMIAR_PERTO 500		// Limiar para um sonar especifico.
 #define LIMIAR 1100				// Limiar da distancia.
 #define LEVE 7					// Potencia do motor para virar aos poucos.
 #define RAPIDO 27				// Potencia do motor para sequir reto.
 
+// Declaração das funções.
 void _start ();
 void encontra_parede();
 void encontrou();
 void vira_direita();
 void contorna_parede();
 
+// Variáveis globais.
 motor_cfg_t motor[2];
 int flag;
 
 /*	Funcao main
 */
 void _start () {
-//	motor_cfg_t motor[2];			// Estrutura para os motores.
-
 	// Inicializa o id e a velocidade dos motores.
 	motor[0].id = 0;
 	motor[1].id = 1;
@@ -46,15 +47,14 @@ void _start () {
 
 /*  Funcao que faz o robo andar reto ate encontrar uma parede.
  * Depois de encontrar, vira ate a parede ficar em sua esquerda.
- *  Parametros:
- *    motor_cfg_t motor[], a estrutuca com os dois motores.
  */
 void encontra_parede() {
 	int loop = 1, sonar = 3, dist = LIMIAR;
-	// Espera o proximity callback ser acionado com um laco.
 
+	// Cria uma callback para encontrar a parede na frente.
 	register_proximity_callback(sonar, dist, encontrou);
 
+	// Espera o proximity callback ser acionado com um laco.
 	flag = 0;
 	while(loop == 1) {
 		if(flag == 1) {
@@ -62,6 +62,7 @@ void encontra_parede() {
 		}
 	}
 
+	// Quando encontrar uma parede na frente, ele para.
 	motor[0].speed = 0;
 	motor[1].speed = 0;
 	set_motors_speed(motor, (motor + 1));
@@ -71,11 +72,16 @@ void encontra_parede() {
 	vira_direita();
 }
 
+/*  Funcao que sinaliza que o callback foi ativado atraves de uma flag.
+ */
 void encontrou() {
 	if(flag == 0)
 		flag = 1;
 }
 
+/*  Funcao que faz o robo virar a direita ate que a parede
+ * fique a sua esquerda.
+ */
 void vira_direita() {
 	int loop = 1;
 	unsigned short sonar0;	// Variaveis auxiliares para a leitura dos sonares.
@@ -104,8 +110,6 @@ void vira_direita() {
 
 /*  Funcao que faz o Uoli contornar a parede sem bater. Quando
  * ele chega de frente a uma parede, ele vira para a direita.
- *  Parametros:
- *    motor_cfg_t motor[], a estrutura com os dois motores.
  */
 void contorna_parede() {
 	unsigned int loop = 1;
