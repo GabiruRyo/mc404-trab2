@@ -153,18 +153,20 @@ SET_GPT:
     mov	r0, #1
     str	r0, [r1, #TZIC_INTCTRL]
 
+	msr  CPSR_c, #0x13       @ SUPERVISOR mode, IRQ/FIQ enabled
+
 	@Pilhas sendo inicializadas
     ldr sp, = SVC_STACK_START
     msr CPSR_c, #0x12
     ldr sp, = IRQ_STACK_START
-    
+
     @ Trecho de codigo que ira mudar para o codigo do usuario
     ldr r0, =USER_CODE
     mrs r1, CPSR
     bic r1, r1, #0b11111111
     orr r1, r1, #0b00010000             @Mascara que ativa interrupcoes IRQ e coloca no modo usuario
     msr CPSR, r1
-    
+
     @ Ajusta a pilha do usuario
     ldr sp, =USER_STACK_START
     ldr pc, =USER_CODE
@@ -496,13 +498,13 @@ IRQ_HANDLER:
     @Salva o contexto original desta chamada do IRQ atual
     mrs r0, SPSR
     push {r0}
-    
+
     @Acrescimo de um ao contador
     ldr r1, =CONTADOR
     ldr r0, [r1]
     add r0, r0, #1
     str r0, [r1]
-    
+
     @Garante que esteja no modo IRQ com interrupcoes ativas
     mrs r1,CPSR
     bic r1, r1, #0b10011111
@@ -527,7 +529,7 @@ IRQ_alarm_for_start:
 	@Se o codigo chegar aqui, achou um alarme legitimo
 	ldr r0, [r5, r1]			@Carrega valor do ponteiro da funcao que eh pra retornar em r7
     push {r7}                   @Salva R7, pois ele sera sujado com codigo de syscall
-    msr CPSR_c, #0x10			@Muda pra usuario       
+    msr CPSR_c, #0x10			@Muda pra usuario
 	blx r0
 
     mov r7, #23					@R7 tera codigo do register_proximity_call
