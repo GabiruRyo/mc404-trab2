@@ -9,10 +9,10 @@
 
 #include "api_robot2.h"
 
-#define LIMIAR_PERTO 500			// Limiar para um sonar especifico.
-#define LIMIAR 1200					// Limiar da distancia.
+#define LIMIAR_PERTO 400		// Limiar para um sonar especifico.
+#define LIMIAR 1100				// Limiar da distancia.
 #define LEVE 7					// Potencia do motor para virar aos poucos.
-#define RAPIDO 27						// Potencia do motor para sequir reto.
+#define RAPIDO 27				// Potencia do motor para sequir reto.
 
 void _start ();
 void encontra_parede();
@@ -35,6 +35,8 @@ void _start () {
 	motor[0].speed = RAPIDO;
 	motor[1].speed = RAPIDO;
 	set_motors_speed(motor, (motor + 1));
+	set_motors_speed(motor, (motor + 1));
+	set_motors_speed(motor, (motor + 1));
 
 	// Chamada das funcoes de encontrar e seguir a parede.
 	encontra_parede();
@@ -49,7 +51,6 @@ void _start () {
  */
 void encontra_parede() {
 	int loop = 1, sonar = 3, dist = LIMIAR;
-	unsigned short sonar3, sonar4;	// Variaveis auxiliares para a leitura
 	// Espera o proximity callback ser acionado com um laco.
 
 	register_proximity_callback(sonar, dist, encontrou);
@@ -63,6 +64,8 @@ void encontra_parede() {
 
 	motor[0].speed = 0;
 	motor[1].speed = 0;
+	set_motors_speed(motor, (motor + 1));
+	set_motors_speed(motor, (motor + 1));
 	set_motors_speed(motor, (motor + 1));
 
 	vira_direita();
@@ -80,6 +83,8 @@ void vira_direita() {
 	// Manda o robo ir para a direta.
 	motor[1].speed = LEVE;
 	set_motor_speed(motor + 1);
+	set_motor_speed(motor + 1);
+	set_motor_speed(motor + 1);
 
 	// Laco que faz o robo parar  de virar a direita depois de ter
 	//encontrado a parede no sensor da esquerda e a frente estiver livra.
@@ -89,6 +94,8 @@ void vira_direita() {
 		if(sonar0 <= LIMIAR) {
 			motor[0].speed = 0;
 			motor[1].speed = 0;
+			set_motors_speed(motor, (motor + 1));
+			set_motors_speed(motor, (motor + 1));
 			set_motors_speed(motor, (motor + 1));
 			loop = 0;
 		}
@@ -110,15 +117,19 @@ void contorna_parede() {
 			sonar4 = read_sonar(4);
 			// Este caso eh se houver bloqueio a frente ou estiver muito proximo
 			//a parede, faz ir para a direita.
-			if(sonar1 <= LIMIAR_PERTO || sonar4 <= LIMIAR_PERTO) {
+			if(sonar1 <= LIMIAR_PERTO || sonar4 <= LIMIAR) {
 				motor[0].speed = 0;
 				motor[1].speed = LEVE;
+				set_motors_speed(motor, (motor + 1));
+				set_motors_speed(motor, (motor + 1));
 				set_motors_speed(motor, (motor + 1));
 			}
 			// Se nao, vai reto.
 			else {
 				motor[0].speed = RAPIDO;
 				motor[1].speed = RAPIDO;
+				set_motors_speed(motor, (motor + 1));
+				set_motors_speed(motor, (motor + 1));
 				set_motors_speed(motor, (motor + 1));
 			}
 		}
@@ -127,11 +138,15 @@ void contorna_parede() {
 			motor[0].speed = RAPIDO;
 			motor[1].speed = RAPIDO;
 			set_motors_speed(motor, (motor + 1));
+			set_motors_speed(motor, (motor + 1));
+			set_motors_speed(motor, (motor + 1));
 		}
 		// Se nao estiver com a parede em sua esquerda, vira a esquerda.
 		else {
 			motor[0].speed = LEVE;
 			motor[1].speed = 0;
+			set_motors_speed(motor, (motor + 1));
+			set_motors_speed(motor, (motor + 1));
 			set_motors_speed(motor, (motor + 1));
 		}
 	}
