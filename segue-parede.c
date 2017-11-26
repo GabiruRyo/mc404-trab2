@@ -14,17 +14,20 @@
 #define LEVE 7					// Potencia do motor para virar aos poucos.
 #define RAPIDO 27						// Potencia do motor para sequir reto.
 
+void _start ();
 void encontra_parede();
+void encontrou();
 void vira_direita();
 void contorna_parede();
 
 motor_cfg_t motor[2];
+int flag;
 
 /*	Funcao main
 */
 void _start () {
 //	motor_cfg_t motor[2];			// Estrutura para os motores.
-	
+
 	// Inicializa o id e a velocidade dos motores.
 	motor[0].id = 0;
 	motor[1].id = 1;
@@ -35,10 +38,8 @@ void _start () {
 
 	// Chamada das funcoes de encontrar e seguir a parede.
 	encontra_parede();
-	
-	contorna_parede();
 
-	return;
+	contorna_parede();
 }
 
 /*  Funcao que faz o robo andar reto ate encontrar uma parede.
@@ -47,33 +48,39 @@ void _start () {
  *    motor_cfg_t motor[], a estrutuca com os dois motores.
  */
 void encontra_parede() {
-	int loop = 1;
+	int loop = 1, sonar = 3, dist = LIMIAR;
 	unsigned short sonar3, sonar4;	// Variaveis auxiliares para a leitura
 	// Espera o proximity callback ser acionado com um laco.
+
+	register_proximity_callback(sonar, dist, encontrou);
+
+	flag = 0;
 	while(loop == 1) {
-		sonar3 = read_sonar(3);
-		sonar4 = read_sonar(4);
-		if((sonar3 < LIMIAR) && (sonar4 < LIMIAR)) {
-			motor[0].speed = 0;
-			motor[1].speed = 0;
-			set_motors_speed(motor, (motor + 1));
+		if(flag == 1) {
 			loop = 0;
 		}
 	}
-	
+
+	motor[0].speed = 0;
+	motor[1].speed = 0;
+	set_motors_speed(motor, (motor + 1));
+
 	vira_direita();
-	
-	return;
+}
+
+void encontrou() {
+	if(flag == 0)
+		flag = 1;
 }
 
 void vira_direita() {
 	int loop = 1;
 	unsigned short sonar0;	// Variaveis auxiliares para a leitura dos sonares.
-	
+
 	// Manda o robo ir para a direta.
 	motor[1].speed = LEVE;
 	set_motor_speed(motor + 1);
-	
+
 	// Laco que faz o robo parar  de virar a direita depois de ter
 	//encontrado a parede no sensor da esquerda e a frente estiver livra.
 	while(loop == 1) {
@@ -86,7 +93,6 @@ void vira_direita() {
 			loop = 0;
 		}
 	}
-	return;
 }
 
 /*  Funcao que faz o Uoli contornar a parede sem bater. Quando
@@ -95,26 +101,24 @@ void vira_direita() {
  *    motor_cfg_t motor[], a estrutura com os dois motores.
  */
 void contorna_parede() {
-	unsigned char loop = 1;
+	unsigned int loop = 1;
 	unsigned short sonar1, sonar4;	// Variaveis auxiliares para a leitura dos sonares.
 	while(loop == 1) {
 		sonar1 = read_sonar(1);
 		// Se estiver com a parede em sua esquerda
 		if(sonar1 <= LIMIAR) {
-		sonar4 = read_sonar(4);
-			// Este caso eh se houver bloqueio a frente ou estiver muito proximo 
+			sonar4 = read_sonar(4);
+			// Este caso eh se houver bloqueio a frente ou estiver muito proximo
 			//a parede, faz ir para a direita.
 			if(sonar1 <= LIMIAR_PERTO || sonar4 <= LIMIAR_PERTO) {
 				motor[0].speed = 0;
 				motor[1].speed = LEVE;
-				set_motors_speed(motor, (motor + 1));
 				set_motors_speed(motor, (motor + 1));
 			}
 			// Se nao, vai reto.
 			else {
 				motor[0].speed = RAPIDO;
 				motor[1].speed = RAPIDO;
-				set_motors_speed(motor, (motor + 1));
 				set_motors_speed(motor, (motor + 1));
 			}
 		}
@@ -123,15 +127,12 @@ void contorna_parede() {
 			motor[0].speed = RAPIDO;
 			motor[1].speed = RAPIDO;
 			set_motors_speed(motor, (motor + 1));
-			set_motors_speed(motor, (motor + 1));
 		}
 		// Se nao estiver com a parede em sua esquerda, vira a esquerda.
 		else {
 			motor[0].speed = LEVE;
 			motor[1].speed = 0;
 			set_motors_speed(motor, (motor + 1));
-			set_motors_speed(motor, (motor + 1));
 		}
 	}
-	return;
 }
